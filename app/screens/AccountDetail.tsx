@@ -1,23 +1,34 @@
 import { ScrollView, StyleSheet } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 
 import { useAccounts } from '../hooks/useAccounts';
 import { useTransactions } from '../hooks/useTransactions';
 import { useTransactionHistory } from '../hooks/useTransactionHistory';
+import { useAccountSummary } from '../hooks/useAccountSummary';
 import { TransactionType } from '../graphql/transactions/types';
 
 import AccountBalanceCard from '../components/account/AccountBalanceCard';
+import AccountSummaryCard from '../components/account/AccountSummaryCard';
 import TransactionForm from '../components/account/TransactionForm';
 import TransactionFilters from '../components/account/TransactionFilters';
 import TransactionList from '../components/account/TransactionList';
+import AppButton from '../components/AppButton';
 
 const AccountDetail = () => {
   const route = useRoute<any>();
   const { accountId, accountNumber } = route.params;
 
+  const navigation = useNavigation<any>();
+
   const { getBalance } = useAccounts();
   const { data, loading, error, refetch } = getBalance(accountId);
+
+  const {
+    summary,
+    loading: summaryLoading,
+    error: summaryError,
+  } = useAccountSummary(accountId);
 
   const { createCredit, createDebit, creditLoading, debitLoading } =
     useTransactions();
@@ -61,6 +72,23 @@ const AccountDetail = () => {
         balance={data?.accountBalance}
         loading={loading}
         error={!!error}
+      />
+
+      <AccountSummaryCard
+        summary={summary}
+        loading={summaryLoading}
+        error={!!summaryError}
+      />
+
+      <AppButton
+        title="Ver historial de balance"
+        variant="secondary"
+        onPress={() =>
+          navigation.navigate('AccountBalanceHistory', {
+            accountId,
+            accountNumber,
+          })
+        }
       />
 
       <TransactionForm

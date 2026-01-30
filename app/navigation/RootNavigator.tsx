@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import Home from '../screens/Home';
 import Login from '../screens/Login';
 import AccountDetail from '../screens/AccountDetail';
+import AccountBalanceHistory from '../screens/AccountBalanceHistory';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,11 @@ const RootNavigator = () => {
               name="AccountDetail"
               component={AccountDetail}
               options={{ title: 'Detalle de cuenta' }}
+            />
+            <Stack.Screen
+              name="AccountBalanceHistory"
+              component={AccountBalanceHistory}
+              options={{ title: 'Historial de balance' }}
             />
           </>
         ) : (
