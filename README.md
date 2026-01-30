@@ -132,10 +132,10 @@ npm test -- --coverage
 
 ### ¿Qué se está testeando?
 
-✔ Componentes reutilizables (botones, inputs)  
-✔ Componentes de dominio (listas de transacciones, formularios)  
-✔ Pantallas completas con hooks mockeados  
-✔ Hooks con lógica de negocio (paginación, estados derivados)  
+- Componentes reutilizables (botones, inputs)  
+- Componentes de dominio (listas de transacciones, formularios)  
+- Pantallas completas con hooks mockeados  
+- Hooks con lógica de negocio (paginación, estados derivados)  
 
 El enfoque de testing prioriza:
 
