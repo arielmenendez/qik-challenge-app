@@ -90,12 +90,6 @@ GraphQL:
 http://localhost:3000/graphql
 ```
 
-Si usas un emulador Android, puede que necesites usar:
-
-```
-http://10.0.2.2:3000
-```
-
 Ajusta las URLs en la configuración de API si es necesario.
 
 ---
