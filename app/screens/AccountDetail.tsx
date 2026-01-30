@@ -1,10 +1,16 @@
-import { View, Text, ActivityIndicator, TextInput } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 
 import { useAccounts } from '../hooks/useAccounts';
 import { useTransactions } from '../hooks/useTransactions';
-import AppButton from '../components/AppButton';
+import { useTransactionHistory } from '../hooks/useTransactionHistory';
+import { TransactionType } from '../graphql/transactions/types';
+
+import AccountBalanceCard from '../components/account/AccountBalanceCard';
+import TransactionForm from '../components/account/TransactionForm';
+import TransactionFilters from '../components/account/TransactionFilters';
+import TransactionList from '../components/account/TransactionList';
 
 const AccountDetail = () => {
   const route = useRoute<any>();
@@ -16,82 +22,86 @@ const AccountDetail = () => {
   const { createCredit, createDebit, creditLoading, debitLoading } =
     useTransactions();
 
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
+  const [typeFilter, setTypeFilter] = useState<TransactionType | undefined>();
+  const [fromDate, setFromDate] = useState<Date | undefined>();
+  const [toDate, setToDate] = useState<Date | undefined>();
 
-  const parsedAmount = parseFloat(amount);
+  const formatStartOfDay = (date: Date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  };
+
+  const formatEndOfDay = (date: Date) => {
+    const d = new Date(date);
+    d.setHours(23, 59, 59, 999);
+    return d.toISOString();
+  };
+
+  const {
+    transactions,
+    total,
+    loading: transactionsLoading,
+    error: transactionsError,
+    loadMore,
+    isFetchingMore,
+  } = useTransactionHistory({
+    accountId,
+    type: typeFilter,
+    from: fromDate ? formatStartOfDay(fromDate) : undefined,
+    to: toDate ? formatEndOfDay(toDate) : undefined,
+  });
+
+  const hasMore = transactions.length < total;
 
   return (
-    <View style={{ padding: 16, gap: 12 }}>
-      <Text style={{ fontSize: 18, fontWeight: '600' }}>
-        Cuenta: {accountNumber}
-      </Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <AccountBalanceCard
+        accountNumber={accountNumber}
+        balance={data?.accountBalance}
+        loading={loading}
+        error={!!error}
+      />
 
-      {loading && <ActivityIndicator size="small" />}
-
-      {error && <Text>No se pudo cargar el saldo</Text>}
-
-      {!loading && !error && (
-        <Text style={{ fontSize: 16 }}>
-          Saldo actual: ${data?.accountBalance.toFixed(2)}
-        </Text>
-      )}
-
-      <Text style={{ fontSize: 16, fontWeight: '600', marginTop: 16 }}>
-        Nueva transacción
-      </Text>
-
-      <TextInput
-        placeholder="Monto"
-        keyboardType="numeric"
-        value={amount}
-        onChangeText={setAmount}
-        style={{
-          borderWidth: 1,
-          borderRadius: 6,
-          padding: 10,
-          marginTop: 8,
+      <TransactionForm
+        creditLoading={creditLoading}
+        debitLoading={debitLoading}
+        onCredit={async (amount, description) => {
+          await createCredit(accountId, amount, description);
+          refetch();
+        }}
+        onDebit={async (amount) => {
+          await createDebit(accountId, amount);
+          refetch();
         }}
       />
 
-      <TextInput
-        placeholder="Descripción (solo para ingreso)"
-        value={description}
-        onChangeText={setDescription}
-        style={{
-          borderWidth: 1,
-          borderRadius: 6,
-          padding: 10,
-          marginTop: 8,
-        }}
+      <TransactionFilters
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+        fromDate={fromDate}
+        toDate={toDate}
+        setFromDate={setFromDate}
+        setToDate={setToDate}
       />
 
-      <AppButton
-        title={creditLoading ? 'Procesando...' : 'Ingresar dinero'}
-        onPress={async () => {
-          if (parsedAmount > 0) {
-            await createCredit(accountId, parsedAmount, description);
-            setAmount('');
-            setDescription('');
-            refetch();
-          }
-        }}
+      <TransactionList
+        transactions={transactions}
+        loading={transactionsLoading}
+        error={!!transactionsError}
+        hasMore={hasMore}
+        isFetchingMore={isFetchingMore}
+        onLoadMore={loadMore}
       />
-
-      <AppButton
-        title={debitLoading ? 'Procesando...' : 'Retirar dinero'}
-        variant="secondary"
-        onPress={async () => {
-          if (parsedAmount > 0) {
-            await createDebit(accountId, parsedAmount);
-            setAmount('');
-            setDescription('');
-            refetch();
-          }
-        }}
-      />
-    </View>
+    </ScrollView>
   );
 };
 
 export default AccountDetail;
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    gap: 16,
+  },
+});

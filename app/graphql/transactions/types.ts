@@ -15,3 +15,19 @@ export interface CreateCreditResponse {
 export interface CreateDebitResponse {
   debit: Transaction;
 }
+
+export interface TransactionsResponse {
+  transactions: {
+    total: number;
+    data: Transaction[];
+  };
+}
+
+export interface TransactionsVariables {
+  accountId: string;
+  type?: 'CREDIT' | 'DEBIT';
+  from?: string;
+  to?: string;
+  limit?: number;
+  offset?: number;
+}
