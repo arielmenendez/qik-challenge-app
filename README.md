@@ -29,7 +29,7 @@ Estos endpoints devuelven un JWT, que luego es utilizado para autorizar las soli
 
 ---
 
-## tack Tecnológico
+## Stack
 
 - **React Native (Expo)**
 - **TypeScript**
@@ -60,7 +60,7 @@ npm install
 
 ---
 
-## ▶Ejecutar la app
+## Ejecutar la app
 
 ```bash
 npx expo start
